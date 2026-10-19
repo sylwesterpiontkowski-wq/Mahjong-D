@@ -1,10 +1,13 @@
-
 name: Build Mahjong-D APK
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+  push:
+    paths:
+      - 'Mahjong-D-complete-update.zip'
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -13,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -24,15 +27,16 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Extract Android project
-        run: unzip -q Mahjong-D-complete.zip
+      - name: Extract project archive
+        shell: bash
+        run: unzip -o "Mahjong-D-complete-update.zip" -d .
 
       - name: Build APK
-        working-directory: Mahjong-D-main
         run: gradle --no-daemon assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Mahjong-D-APK
-          path: Mahjong-D-main/app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
