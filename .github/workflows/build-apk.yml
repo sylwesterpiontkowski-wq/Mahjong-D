@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - 'Mahjong-D-complete-update.zip'
+      - '.github/workflows/build-apk.yml'
 
 permissions:
   contents: read
@@ -12,6 +13,7 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -28,8 +30,15 @@ jobs:
           gradle-version: '8.9'
 
       - name: Extract project archive
-        shell: bash
-        run: unzip -o "Mahjong-D-complete-update.zip" -d .
+        run: |
+          unzip -o "Mahjong-D-complete-update.zip" -d .
+          echo "Files in repository root:"
+          ls -la
+          if [ ! -f "app/build.gradle.kts" ]; then
+            echo "ERROR: app/build.gradle.kts not found in repository root."
+            find . -maxdepth 4 -name "build.gradle.kts" -o -name "settings.gradle.kts"
+            exit 1
+          fi
 
       - name: Build APK
         run: gradle --no-daemon assembleDebug
